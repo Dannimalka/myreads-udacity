@@ -1,7 +1,6 @@
 import React from "react";
 
 const Book = ({ book, updateShelf }) => {
-  const bookURL = book.imageLinks.thumbnail;
   const bookTitle = book.title;
   const bookAuthor = book.authors;
 
@@ -20,12 +19,10 @@ const Book = ({ book, updateShelf }) => {
         ></div>
         <div className="book-shelf-changer">
           <select
-            value={book.shelf}
+            defaultValue={book.shelf ? book.shelf : "none"}
             onChange={(event) => updateShelf(book, event.target.value)}
           >
-            <option value="none" disabled>
-              Move to...
-            </option>
+            <option disabled>Move to...</option>
             <option value="currentlyReading">Currently Reading</option>
             <option value="wantToRead">Want to Read</option>
             <option value="read">Read</option>

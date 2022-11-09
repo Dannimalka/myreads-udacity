@@ -1,15 +1,38 @@
 import React, { useState } from "react";
 import { search } from "../BooksAPI";
+import Book from "./Book";
 
-const Search = ({ updateShelf, saveData }) => {
+const Search = ({ updateShelf, saveData, books }) => {
   const [searchValue, setSearchValue] = useState([]);
   const [searchArray, setSearchArray] = useState([]);
 
   const inputValue = async (event) => {
+    let isActive = true;
+    const searchText = event.target.value;
     setSearchValue(event.target.value);
-    const searchBookResult = await search(event.target.value);
+    if (searchText.length === 0) {
+      setSearchArray([]);
+      return;
+    }
+    const searchBookResult = await search(searchText);
+    if (searchBookResult.error) {
+      setSearchArray([]);
+      return;
+    }
     if (searchBookResult instanceof Array) {
-      return setSearchArray(searchBookResult);
+      return setSearchArray(
+        searchBookResult.map((result) => {
+          const existingBook = books.find((book) => book.id === result.id);
+          if (existingBook) {
+            return { ...result, shelf: existingBook.shelf };
+          }
+
+          return result;
+        })
+      );
+    }
+    if (isActive) {
+      setSearchArray(searchBookResult);
     }
     return setSearchArray([]);
   };
@@ -34,40 +57,7 @@ const Search = ({ updateShelf, saveData }) => {
           {searchArray &&
             searchArray.map((eachBook) => (
               <li key={eachBook.id}>
-                <div className="book">
-                  <div className="book-top">
-                    <div
-                      className="book-cover"
-                      style={{
-                        width: 128,
-                        height: 193,
-                        backgroundImage: eachBook.imageLinks
-                          ? `url(${eachBook.imageLinks.thumbnail})`
-                          : "",
-                      }}
-                    ></div>
-                    <div className="book-shelf-changer">
-                      <select
-                        value={eachBook.shelf}
-                        onChange={(event) =>
-                          saveData(eachBook, event.target.value)
-                        }
-                      >
-                        <option value="none" disabled>
-                          Move to...
-                        </option>
-                        <option value="currentlyReading">
-                          Currently Reading
-                        </option>
-                        <option value="wantToRead">Want to Read</option>
-                        <option value="read">Read</option>
-                        <option value="none">None</option>
-                      </select>
-                    </div>
-                  </div>
-                  <div className="book-title">{eachBook.Title}</div>
-                  <div className="book-authors">{eachBook.Author}</div>
-                </div>
+                <Book book={eachBook} updateShelf={updateShelf} />
               </li>
             ))}
         </ol>

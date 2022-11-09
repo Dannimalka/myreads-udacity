@@ -17,15 +17,19 @@ function App() {
   }, []);
 
   const updateShelf = (book, moveBook) => {
+    let newBook = true;
     const updateBook = books.map((eachBook) => {
       if (eachBook.id === book.id) {
-        eachBook.shelf = moveBook;
-        BooksAPI.update(book, book.shelf);
-        return eachBook;
+        newBook = false;
+        return { ...eachBook, shelf: moveBook };
       }
       return eachBook;
     });
+    if (newBook) {
+      updateBook.push({ ...book, shelf: moveBook });
+    }
     setBooks(updateBook);
+    BooksAPI.update(book, moveBook);
   };
 
   const saveData = (book, shelf) => {
@@ -39,7 +43,7 @@ function App() {
   return (
     <div className="app">
       {showSearchPage ? (
-        <Search updateShelf={updateShelf} saveData={saveData} />
+        <Search updateShelf={updateShelf} saveData={saveData} books={books} />
       ) : (
         <div className="list-books">
           <div className="list-books-title">
